@@ -3,7 +3,18 @@
    ================================================ */
 
 /* ── Reset & Base ─────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
+  user-select: none;
+}
+
+@supports (padding-top: env(safe-area-inset-top)) {
+  .header {
+    padding-top: env(safe-area-inset-top);
+  }
+}
 
 :root {
   --bg:          #0a0a0f;
@@ -791,6 +802,20 @@ body {
   fill: currentColor;
 }
 
+.copyright {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--text);
+  font-size: .9rem;
+  border: solid 1px var(--accent);   
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: var(--bg3);
+  box-shadow: 0 0 5px var(--accent);  
+  z-index: 100;
+}
 
 
 
