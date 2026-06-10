@@ -1,0 +1,2 @@
+rootProject.name = 'StreamVibe'
+include ':app'

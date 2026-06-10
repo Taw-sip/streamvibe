@@ -1,0 +1,38 @@
+{
+  "appId": "com.streamvibe.livesports",
+  "appName": "StreamVibe",
+  "webDir": "src",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true,
+    "allowNavigation": [
+      "*.m3u8",
+      "*.ts",
+      "*.aac",
+      "*.mp4",
+      "*.cloudfront.net",
+      "*.amagi.tv",
+      "*.aynaott.com",
+      "*.gpcdn.net",
+      "*.imgur.com",
+      "*.ibb.co",
+      "*.googleapis.com",
+      "*.gstatic.com",
+      "*.jsdelivr.net",
+      "fonts.googleapis.com"
+    ]
+  },
+  "android": {
+    "buildOptions": {
+      "keystorePath": null,
+      "keystoreAlias": null,
+      "releaseType": "APK"
+    }
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  }
+}

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Allow cleartext (HTTP) traffic for live stream URLs -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+    <!-- Explicitly allow all streaming domains -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">aynaott.com</domain>
+        <domain includeSubdomains="true">amagi.tv</domain>
+        <domain includeSubdomains="true">cloudfront.net</domain>
+        <domain includeSubdomains="true">gpcdn.net</domain>
+        <domain includeSubdomains="true">akamaized.net</domain>
+        <domain includeSubdomains="true">cdn.jwplayer.com</domain>
+        <domain includeSubdomains="true">imgur.com</domain>
+        <domain includeSubdomains="true">ibb.co</domain>
+    </domain-config>
+</network-security-config>
