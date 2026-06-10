@@ -29,65 +29,100 @@ jobs:
       - name: Fix gradlew permissions
         run: chmod +x android/gradlew
 
-      - name: Fix styles.xml (remove tools namespace issue)
+      - name: Overwrite all Gradle and resource files
         run: |
+
+          # ── Root build.gradle ──────────────────────────
+          cat > android/build.gradle << 'ROOTGRADLE'
+buildscript {
+    ext.kotlin_version = '1.9.10'
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.2.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+ROOTGRADLE
+
+          # ── app/build.gradle ───────────────────────────
+          cat > android/app/build.gradle << 'APPGRADLE'
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+
+android {
+    compileSdk 34
+    namespace "com.streamvibe.livesports"
+
+    defaultConfig {
+        applicationId "com.streamvibe.livesports"
+        minSdk 22
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.webkit:webkit:1.10.0'
+    implementation 'androidx.core:core-ktx:1.12.0'
+}
+APPGRADLE
+
+          # ── settings.gradle ────────────────────────────
+          cat > android/settings.gradle << 'SETTINGS'
+rootProject.name = 'StreamVibe'
+include ':app'
+SETTINGS
+
+          # ── styles.xml ─────────────────────────────────
           cat > android/app/src/main/res/values/styles.xml << 'STYLES'
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-              <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
-                  <item name="android:windowBackground">#0a0a0f</item>
-                  <item name="android:statusBarColor">#0a0a0f</item>
-                  <item name="android:navigationBarColor">#0a0a0f</item>
-                  <item name="android:windowLightStatusBar">false</item>
-                  <item name="colorPrimary">#a78bfa</item>
-                  <item name="colorAccent">#a78bfa</item>
-              </style>
-          </resources>
-          STYLES
-          echo "styles.xml fixed"
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">#0a0a0f</item>
+        <item name="android:statusBarColor">#0a0a0f</item>
+        <item name="android:navigationBarColor">#0a0a0f</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="colorPrimary">#a78bfa</item>
+        <item name="colorAccent">#a78bfa</item>
+    </style>
+</resources>
+STYLES
 
-      - name: Fix app/build.gradle (remove buildscript block)
-        run: |
-          cat > android/app/build.gradle << 'GRADLE'
-          apply plugin: 'com.android.application'
-          apply plugin: 'kotlin-android'
-
-          android {
-              compileSdk 34
-              namespace "com.streamvibe.livesports"
-
-              defaultConfig {
-                  applicationId "com.streamvibe.livesports"
-                  minSdk 22
-                  targetSdk 34
-                  versionCode 1
-                  versionName "1.0.0"
-              }
-
-              buildTypes {
-                  release {
-                      minifyEnabled false
-                      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-                  }
-              }
-
-              compileOptions {
-                  sourceCompatibility JavaVersion.VERSION_17
-                  targetCompatibility JavaVersion.VERSION_17
-              }
-
-              kotlinOptions {
-                  jvmTarget = "17"
-              }
-          }
-
-          dependencies {
-              implementation 'androidx.appcompat:appcompat:1.6.1'
-              implementation 'androidx.webkit:webkit:1.10.0'
-              implementation 'androidx.core:core-ktx:1.12.0'
-          }
-          GRADLE
-          echo "build.gradle fixed"
+          echo "All files overwritten successfully"
+          echo "--- Root build.gradle ---"
+          cat android/build.gradle
+          echo "--- App build.gradle ---"
+          cat android/app/build.gradle
 
       - name: Cache Gradle
         uses: actions/cache@v4
@@ -110,6 +145,4 @@ jobs:
           retention-days: 30
 
       - name: Done
-        run: |
-          echo "✅ APK built!"
-          find android/app/build/outputs -name "*.apk" -exec ls -lh {} \;
+        run: find android/app/build/outputs -name "*.apk" -exec ls -lh {} \;
