@@ -1,10 +1,12 @@
 package com.streamvibe.livesports
 
 import android.annotation.SuppressLint
-import android.app.Activity
+import android.app.PictureInPictureParams
 import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
+import android.util.Rational
 import android.view.View
 import android.view.WindowManager
 import android.webkit.*
@@ -17,19 +19,19 @@ import androidx.core.view.WindowInsetsControllerCompat
 class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
+    private lateinit var container: FrameLayout
     private var customView: View? = null
     private var customViewCallback: WebChromeClient.CustomViewCallback? = null
+    private var isInPip = false
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Edge-to-edge display
         WindowCompat.setDecorFitsSystemWindows(window, false)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        // Immersive layout
-        val container = FrameLayout(this)
+        container = FrameLayout(this)
         container.setBackgroundColor(android.graphics.Color.parseColor("#0a0a0f"))
         setContentView(container)
 
@@ -40,7 +42,6 @@ class MainActivity : AppCompatActivity() {
         )
         container.addView(webView)
 
-        // WebView settings
         val settings = webView.settings
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
@@ -49,7 +50,7 @@ class MainActivity : AppCompatActivity() {
         settings.allowContentAccess = true
         settings.loadWithOverviewMode = true
         settings.useWideViewPort = true
-        settings.mediaPlaybackRequiresUserGesture = false // allow autoplay
+        settings.mediaPlaybackRequiresUserGesture = false
         settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         settings.cacheMode = WebSettings.LOAD_DEFAULT
         settings.setSupportZoom(false)
@@ -59,10 +60,10 @@ class MainActivity : AppCompatActivity() {
             settings.safeBrowsingEnabled = false
         }
 
-        // WebChromeClient — handles fullscreen video, permissions, JS alerts
-        webView.webChromeClient = object : WebChromeClient() {
+        // JavaScript → Android bridge
+        webView.addJavascriptInterface(PipBridge(), "AndroidPip")
 
-            // Fullscreen video support
+        webView.webChromeClient = object : WebChromeClient() {
             override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
                 customView = view
                 customViewCallback = callback
@@ -74,7 +75,6 @@ class MainActivity : AppCompatActivity() {
                 hideSystemUI()
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
             }
-
             override fun onHideCustomView() {
                 customView?.let { container.removeView(it) }
                 customView = null
@@ -84,67 +84,131 @@ class MainActivity : AppCompatActivity() {
                 showSystemUI()
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
             }
-
-            // Allow media & location permissions from JS
             override fun onPermissionRequest(request: PermissionRequest?) {
                 request?.grant(request.resources)
             }
-
-            // Console logging for debugging
-            override fun onConsoleMessage(msg: ConsoleMessage?): Boolean {
-                return true // suppress
-            }
+            override fun onConsoleMessage(msg: ConsoleMessage?) = true
         }
 
-        // WebViewClient — intercept navigation
         webView.webViewClient = object : WebViewClient() {
-            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-                val url = request?.url?.toString() ?: return false
-                // Let HLS/stream URLs load normally
-                if (url.contains(".m3u8") || url.contains(".ts") || url.startsWith("blob:")) {
-                    return false
-                }
-                // Keep all navigation inside the WebView
-                return false
-            }
+            override fun shouldOverrideUrlLoading(
+                view: WebView?, request: WebResourceRequest?
+            ) = false
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                // Inject extra JS for native feel
                 view?.evaluateJavascript("""
-                    (function() {
-                        // Disable pull-to-refresh bounce feel
+                    (function(){
                         document.body.style.overscrollBehavior = 'none';
-                        document.documentElement.style.overscrollBehavior = 'none';
                     })();
                 """.trimIndent(), null)
             }
         }
 
-        // Load the app
+        // Register PiP params
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            setPictureInPictureParams(
+                PictureInPictureParams.Builder()
+                    .setAspectRatio(Rational(16, 9))
+                    .build()
+            )
+        }
+
         webView.loadUrl("file:///android_asset/public/index.html")
     }
 
-    // Back button: go back in WebView history or exit
-    @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-        // If fullscreen video, exit it first
-        if (customView != null) {
-            webView.webChromeClient?.onHideCustomView()
-            return
-        }
-        if (webView.canGoBack()) {
-            webView.goBack()
-        } else {
-            super.onBackPressed()
+    // ── JS Bridge ──────────────────────────────
+    inner class PipBridge {
+        @android.webkit.JavascriptInterface
+        fun enter() = runOnUiThread { enterPip() }
+
+        @android.webkit.JavascriptInterface
+        fun isSupported(): Boolean =
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+            packageManager.hasSystemFeature(
+                android.content.pm.PackageManager.FEATURE_PICTURE_IN_PICTURE
+            )
+    }
+
+    // ── Enter native PiP ───────────────────────
+    private fun enterPip() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            try {
+                enterPictureInPictureMode(
+                    PictureInPictureParams.Builder()
+                        .setAspectRatio(Rational(16, 9))
+                        .build()
+                )
+            } catch (e: Exception) { e.printStackTrace() }
         }
     }
 
-    // Hide system bars for immersive fullscreen
+    // ── PiP mode changed ───────────────────────
+    override fun onPictureInPictureModeChanged(
+        isInPictureInPictureMode: Boolean,
+        newConfig: Configuration
+    ) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+        isInPip = isInPictureInPictureMode
+
+        if (isInPictureInPictureMode) {
+            // Hide all UI, show only video fullscreen
+            webView.evaluateJavascript("""
+                (function(){
+                    var els = document.querySelectorAll(
+                        '.header,.sidebar,.mobile-sidebar-toggle,
+                         .now-playing-bar,.pip-btn-overlay,
+                         .copyright,.player-placeholder'
+                    );
+                    els.forEach(function(e){ e.dataset.pipHidden='1'; e.style.display='none'; });
+                    var v = document.getElementById('videoPlayer');
+                    if(v){
+                        v.style.cssText = 'position:fixed!important;inset:0!important;' +
+                            'width:100%!important;height:100%!important;' +
+                            'z-index:99999!important;background:#000!important;display:block!important;';
+                    }
+                })();
+            """.trimIndent(), null)
+        } else {
+            // Restore all UI
+            webView.evaluateJavascript("""
+                (function(){
+                    var els = document.querySelectorAll('[data-pip-hidden]');
+                    els.forEach(function(e){ e.style.display=''; e.removeAttribute('data-pip-hidden'); });
+                    var v = document.getElementById('videoPlayer');
+                    if(v){ v.style.cssText = ''; v.style.display = 'block'; }
+                })();
+            """.trimIndent(), null)
+        }
+    }
+
+    // ── Auto-enter PiP on Home press ──────────
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        webView.evaluateJavascript(
+            "var v=document.getElementById('videoPlayer'); v && !v.paused ? 'playing' : 'paused'"
+        ) { result ->
+            if (result?.contains("playing") == true) {
+                runOnUiThread { enterPip() }
+            }
+        }
+    }
+
+    // ── Back button ────────────────────────────
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        when {
+            isInPip -> moveTaskToBack(false)
+            customView != null -> webView.webChromeClient?.onHideCustomView()
+            webView.canGoBack() -> webView.goBack()
+            else -> super.onBackPressed()
+        }
+    }
+
     private fun hideSystemUI() {
-        WindowInsetsControllerCompat(window, window.decorView).let { ctrl ->
-            ctrl.hide(WindowInsetsCompat.Type.systemBars())
-            ctrl.systemBarsBehavior =
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            hide(WindowInsetsCompat.Type.systemBars())
+            systemBarsBehavior =
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
     }
@@ -154,20 +218,7 @@ class MainActivity : AppCompatActivity() {
             .show(WindowInsetsCompat.Type.systemBars())
     }
 
-    override fun onResume() {
-        super.onResume()
-        webView.onResume()
-        webView.resumeTimers()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        webView.onPause()
-        webView.pauseTimers()
-    }
-
-    override fun onDestroy() {
-        webView.destroy()
-        super.onDestroy()
-    }
+    override fun onResume() { super.onResume(); webView.onResume(); webView.resumeTimers() }
+    override fun onPause()  { super.onPause();  webView.onPause();  webView.pauseTimers()  }
+    override fun onDestroy(){ webView.destroy(); super.onDestroy() }
 }

@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>StreamVibe — Live Sports TV</title>
-  <meta name="description" content="Watch 120+ live Sports channels from around the world — Cricket, Football, Combat, and Global Sports Networks. Free live streaming." />
+  <meta name="description"
+    content="Watch 120+ live Sports channels from around the world — Cricket, Football, Combat, and Global Sports Networks. Free live streaming." />
 
   <!-- PWA Meta -->
   <meta name="theme-color" content="#0a0a0f" />
@@ -30,10 +32,12 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
 
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
 
   <!-- Header -->
@@ -42,17 +46,17 @@
       <div class="logo">
         <div class="logo-icon">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M21 7L13 7M21 12L8 12M21 17L3 17" stroke="url(#grad1)" stroke-width="2.2" stroke-linecap="round"/>
-            <circle cx="5" cy="7" r="2.5" fill="url(#grad1)"/>
-            <circle cx="10" cy="12" r="2.5" fill="url(#grad2)"/>
+            <path d="M21 7L13 7M21 12L8 12M21 17L3 17" stroke="url(#grad1)" stroke-width="2.2" stroke-linecap="round" />
+            <circle cx="5" cy="7" r="2.5" fill="url(#grad1)" />
+            <circle cx="10" cy="12" r="2.5" fill="url(#grad2)" />
             <defs>
               <linearGradient id="grad1" x1="0" y1="0" x2="24" y2="0" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#a78bfa"/>
-                <stop offset="1" stop-color="#f472b6"/>
+                <stop stop-color="#a78bfa" />
+                <stop offset="1" stop-color="#f472b6" />
               </linearGradient>
               <linearGradient id="grad2" x1="0" y1="0" x2="24" y2="0" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#f472b6"/>
-                <stop offset="1" stop-color="#fb923c"/>
+                <stop stop-color="#f472b6" />
+                <stop offset="1" stop-color="#fb923c" />
               </linearGradient>
             </defs>
           </svg>
@@ -63,8 +67,8 @@
       <div class="header-center">
         <div class="search-bar">
           <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
-            <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2" />
+            <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
           </svg>
           <input type="text" id="searchInput" placeholder="Search channels..." autocomplete="off" />
           <button class="search-clear" id="searchClear" aria-label="Clear search">✕</button>
@@ -77,11 +81,13 @@
         </span>
         <span class="channel-count" id="channelCount">— Channels</span>
         <!-- PWA install button (hidden until prompt fires) -->
-        <button class="install-btn" id="installBtn" aria-label="Install App" title="Install StreamVibe" style="display:none;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
+        <button class="install-btn" id="installBtn" aria-label="Install App" title="Install StreamVibe"
+          style="display:none;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
           </svg>
           <span>Install</span>
         </button>
@@ -100,8 +106,8 @@
         <div class="sidebar-search-section" id="sidebarSearchSection">
           <div class="search-bar">
             <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
-              <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2" />
+              <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
             </svg>
             <input type="text" id="sidebarSearchInput" placeholder="Search channels..." autocomplete="off" />
             <button class="search-clear" id="sidebarSearchClear" aria-label="Clear search">✕</button>
@@ -140,8 +146,8 @@
             <div class="placeholder-inner">
               <div class="placeholder-icon">
                 <svg width="60" height="60" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="10" stroke="rgba(167,139,250,0.3)" stroke-width="1.5"/>
-                  <path d="M10 8l6 4-6 4V8z" fill="rgba(167,139,250,0.5)"/>
+                  <circle cx="12" cy="12" r="10" stroke="rgba(167,139,250,0.3)" stroke-width="1.5" />
+                  <path d="M10 8l6 4-6 4V8z" fill="rgba(167,139,250,0.5)" />
                 </svg>
               </div>
               <p class="placeholder-title">Select a channel to start watching</p>
@@ -149,6 +155,21 @@
             </div>
           </div>
           <video id="videoPlayer" controls playsinline style="display:none;"></video>
+          <button id="pipBtn" class="pip-btn-overlay" title="Picture-in-Picture" aria-label="Picture-in-Picture"
+            style="display:none;">
+            <svg id="pipIconEnter" width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <rect x="2" y="4" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.8" fill="none" />
+              <rect x="12" y="11" width="8" height="5" rx="1.2" fill="currentColor" />
+              <path d="M7 9L4 6M4 6h3M4 6v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+            <svg id="pipIconExit" width="20" height="20" viewBox="0 0 24 24" fill="none" style="display:none">
+              <rect x="2" y="4" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.8" fill="none" />
+              <rect x="12" y="11" width="8" height="5" rx="1.2" fill="currentColor" />
+              <path d="M4 9l3-3M7 9H4M7 9V6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+          </button>
           <div class="player-overlay" id="playerOverlay" style="display:none;">
             <div class="channel-on-screen" id="channelOnScreen">
               <img id="overlayLogo" src="" alt="" />
@@ -189,13 +210,15 @@
   </div>
 
   <!-- Copyright -->
-   <div class="copyright">
+  <div class="copyright">
     <p>Developed By Nayem</p>
-   </div>
+  </div>
   <!-- HLS.js -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js"></script>
   <script src="channels.js"></script>
   <script src="app.js"></script>
+  <script src="pip.js"></script>
   <script src="pwa.js"></script>
 </body>
+
 </html>
